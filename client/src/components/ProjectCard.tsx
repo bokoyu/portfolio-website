@@ -7,7 +7,6 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  image: string;
   technologies: string[];
   liveUrl?: string;
   githubUrl?: string;
@@ -48,41 +47,11 @@ export default function ProjectCard({ project, isAdmin = false, onEdit, onDelete
 
   return (
     <Card className="group hover-elevate transition-all duration-200 overflow-hidden">
-      <div className="aspect-video relative overflow-hidden">
-        <img
-          src={project.image}
-          alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          data-testid={`img-project-${project.id}`}
-        />
-        {project.featured && (
-          <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
-            Featured
-          </Badge>
-        )}
-        {isAdmin && (
-          <div className="absolute top-3 right-3 flex gap-2">
-            <Button
-              size="icon"
-              variant="secondary"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={handleEdit}
-              data-testid={`button-edit-project-${project.id}`}
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="destructive"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={handleDelete}
-              data-testid={`button-delete-project-${project.id}`}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
+      {project.featured && (
+        <div className="px-4 pt-4">
+          <Badge className="bg-primary text-primary-foreground">Featured</Badge>
+        </div>
+      )}
 
       <CardHeader>
         <CardTitle className="text-xl font-semibold" data-testid={`text-project-title-${project.id}`}>
@@ -126,6 +95,28 @@ export default function ProjectCard({ project, isAdmin = false, onEdit, onDelete
               <Github className="mr-2 h-4 w-4" />
               Source Code
             </Button>
+          )}
+          {isAdmin && (
+            <div className="ml-auto flex gap-2">
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8"
+                onClick={handleEdit}
+                data-testid={`button-edit-project-${project.id}`}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="destructive"
+                className="h-8 w-8"
+                onClick={handleDelete}
+                data-testid={`button-delete-project-${project.id}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       </CardContent>

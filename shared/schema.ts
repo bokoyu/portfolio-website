@@ -22,7 +22,6 @@ export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  image: text("image"),
   technologies: text("technologies").array().notNull().default(sql`ARRAY[]::text[]`),
   liveUrl: text("live_url"),
   githubUrl: text("github_url"),
@@ -32,7 +31,6 @@ export const projects = pgTable("projects", {
 export const insertProjectSchema = createInsertSchema(projects).pick({
   title: true,
   description: true,
-  image: true,
   technologies: true,
   liveUrl: true,
   githubUrl: true,

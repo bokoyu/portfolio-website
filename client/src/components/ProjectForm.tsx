@@ -20,7 +20,6 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
   const [formData, setFormData] = useState({
     title: project?.title || '',
     description: project?.description || '',
-    image: project?.image || '',
     technologies: project?.technologies || [],
     liveUrl: project?.liveUrl || '',
     githubUrl: project?.githubUrl || '',
@@ -58,16 +57,6 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
     console.log('Technology removed:', tech);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Mock image upload - TODO: remove mock functionality
-      const mockUrl = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, image: mockUrl }));
-      console.log('Image uploaded:', file.name);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -87,7 +76,6 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
         setFormData({
           title: '',
           description: '',
-          image: '',
           technologies: [],
           liveUrl: '',
           githubUrl: '',
@@ -107,7 +95,6 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
       setFormData({
         title: '',
         description: '',
-        image: '',
         technologies: [],
         liveUrl: '',
         githubUrl: '',
@@ -165,41 +152,7 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="image">Project Image</Label>
-            <div className="flex gap-2">
-              <Input
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleInputChange}
-                placeholder="Image URL or upload below"
-                data-testid="input-project-image"
-              />
-              <Label htmlFor="file-upload" className="cursor-pointer">
-                <Button type="button" variant="outline" size="icon">
-                  <Upload className="h-4 w-4" />
-                </Button>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  data-testid="input-file-upload"
-                />
-              </Label>
-            </div>
-            {formData.image && (
-              <div className="mt-2">
-                <img
-                  src={formData.image}
-                  alt="Project preview"
-                  className="w-32 h-20 object-cover rounded border"
-                />
-              </div>
-            )}
-          </div>
+          {/* Image field removed */}
 
           <div className="space-y-2">
             <Label>Technologies</Label>
