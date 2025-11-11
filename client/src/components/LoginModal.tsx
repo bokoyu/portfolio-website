@@ -24,24 +24,20 @@ export default function LoginModal({ open, onOpenChange, onLoginSuccess }: Login
     setError('');
 
     try {
-      // Mock authentication - TODO: remove mock functionality
-      console.log('Login attempt:', { username, password });
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (username === 'admin' && password === 'password') {
-        console.log('Login successful');
+      // Simple client-side check against env-configured credentials.
+      const ADMIN_USER = import.meta.env.VITE_ADMIN_USERNAME as string | undefined;
+      const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASSWORD as string | undefined;
+
+      if (ADMIN_USER && ADMIN_PASS && username === ADMIN_USER && password === ADMIN_PASS) {
         onLoginSuccess();
         onOpenChange(false);
         setUsername('');
         setPassword('');
       } else {
-        setError('Invalid username or password. Try admin/password for demo.');
+        setError('Invalid username or password.');
       }
     } catch (err) {
       setError('An error occurred during login. Please try again.');
-      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -121,9 +117,7 @@ export default function LoginModal({ open, onOpenChange, onLoginSuccess }: Login
           </div>
         </form>
 
-        <div className="text-xs text-muted-foreground text-center pt-2 border-t">
-          Demo credentials: admin / password
-        </div>
+        
       </DialogContent>
     </Dialog>
   );
