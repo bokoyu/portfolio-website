@@ -59,7 +59,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact", async (req: Request, res: Response) => {
     const parsed = contactSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: parsed.error.message });
+      const { fieldErrors, formErrors } = parsed.error.flatten();
+      return res.status(400).json({
+        message: "Please correct the highlighted errors.",
+        errors: {
+          ...fieldErrors,
+          ...(formErrors.length ? { _form: formErrors } : {}),
+        },
+      });
     }
 
     try {

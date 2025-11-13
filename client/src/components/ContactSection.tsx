@@ -17,6 +17,7 @@ export default function ContactSection() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -27,6 +28,7 @@ export default function ContactSection() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setFieldErrors({});
 
     try {
       const response = await fetch('/api/contact', {
@@ -35,13 +37,18 @@ export default function ContactSection() {
         body: JSON.stringify(formData)
       });
 
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        const data = await response.json().catch(() => null);
+        if (data?.errors && typeof data.errors === 'object') {
+          setFieldErrors(data.errors);
+        }
         throw new Error(data?.message ?? 'Something went wrong. Please try again.');
       }
 
       setSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
+      setFieldErrors({});
       
       // Reset success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
@@ -147,10 +154,10 @@ export default function ContactSection() {
                     </AlertDescription>
                   </Alert>
                 )}
-                {error && (
+                {(error || fieldErrors._form?.length) && (
                   <Alert variant="destructive" className="mb-6">
                     <AlertDescription>
-                      {error}
+                      {error ?? fieldErrors._form?.join(' ') ?? 'Something went wrong.'}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -168,6 +175,11 @@ export default function ContactSection() {
                         required
                         data-testid="input-contact-name"
                       />
+                      {fieldErrors.name?.length ? (
+                        <p className="text-sm text-destructive">
+                          {fieldErrors.name[0]}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email *</Label>
@@ -181,6 +193,11 @@ export default function ContactSection() {
                         required
                         data-testid="input-contact-email"
                       />
+                      {fieldErrors.email?.length ? (
+                        <p className="text-sm text-destructive">
+                          {fieldErrors.email[0]}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
 
@@ -195,6 +212,11 @@ export default function ContactSection() {
                       required
                       data-testid="input-contact-subject"
                     />
+                    {fieldErrors.subject?.length ? (
+                      <p className="text-sm text-destructive">
+                        {fieldErrors.subject[0]}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div className="space-y-2">
@@ -209,6 +231,11 @@ export default function ContactSection() {
                       required
                       data-testid="textarea-contact-message"
                     />
+                    {fieldErrors.message?.length ? (
+                      <p className="text-sm text-destructive">
+                        {fieldErrors.message[0]}
+                      </p>
+                    ) : null}
                   </div>
 
                   <Button
