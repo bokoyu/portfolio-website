@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,33 @@ export default function ProjectForm({ open, onOpenChange, project, onSave }: Pro
   });
   const [newTech, setNewTech] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      if (project) {
+
+        setFormData({
+          title: project.title || '',
+          description: project.description || '',
+          technologies: project.technologies || [],
+          liveUrl: project.liveUrl || '',
+          githubUrl: project.githubUrl || '',
+          featured: project.featured || false,
+        });
+      } else {
+
+        setFormData({
+          title: '',
+          description: '',
+          technologies: [],
+          liveUrl: '',
+          githubUrl: '',
+          featured: false,
+        });
+      }
+      setNewTech('');
+    }
+  }, [project, open]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
