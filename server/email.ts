@@ -1,5 +1,4 @@
-import nodemailer from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { Resend } from "resend";
 
 interface ContactPayload {
   name: string;
@@ -8,69 +7,42 @@ interface ContactPayload {
   message: string;
 }
 
-let transporter: nodemailer.Transporter | null = null;
+let resendClient: Resend | null = null;
 
-function getTransporter() {
-  if (transporter) {
-    return transporter;
+function getResendClient() {
+  if (resendClient) {
+    return resendClient;
   }
 
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD } = process.env;
-
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     throw new Error(
-      "SMTP configuration is incomplete. Ensure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD are set.",
+      "RESEND_API_KEY must be set to send contact form submissions via Resend.",
     );
   }
 
-  const port = Number(SMTP_PORT);
-  const secure = port === 465;
-
-  const transportOptions: SMTPTransport.Options = {
-    host: SMTP_HOST,
-    port,
-    secure,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASSWORD,
-    },
-    tls: secure
-      ? undefined
-      : {
-          // When using STARTTLS - validate certificate
-          servername: SMTP_HOST,
-        },
-  };
-
-  transporter = nodemailer.createTransport(transportOptions);
-
-  return transporter;
+  resendClient = new Resend(apiKey);
+  return resendClient;
 }
 
 export async function sendContactEmail(payload: ContactPayload) {
-  const transporterInstance = getTransporter();
+  const resend = getResendClient();
 
-  const toAddress = process.env.CONTACT_TO_EMAIL || process.env.SMTP_USER;
-
+  const toAddress = process.env.CONTACT_TO_EMAIL;
   if (!toAddress) {
     throw new Error(
       "CONTACT_TO_EMAIL must be set to receive contact form submissions.",
     );
   }
 
-  const fromAddress = process.env.CONTACT_FROM_EMAIL || process.env.SMTP_USER;
-
-  if (!fromAddress) {
-    throw new Error(
-      "CONTACT_FROM_EMAIL or SMTP_USER must be set to send contact form submissions.",
-    );
-  }
+  const fromAddress =
+    process.env.CONTACT_FROM_EMAIL || "Portfolio <onboarding@resend.dev>";
 
   const subjectPrefix = process.env.CONTACT_SUBJECT_PREFIX || "[Portfolio]";
 
-  await transporterInstance.sendMail({
+  await resend.emails.send({
     from: fromAddress,
-    to: toAddress,
+    to: [toAddress],
     replyTo: payload.email,
     subject: `${subjectPrefix} ${payload.subject}`,
     text: `Name: ${payload.name}
