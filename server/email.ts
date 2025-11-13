@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 interface ContactPayload {
   name: string;
@@ -22,15 +23,26 @@ function getTransporter() {
     );
   }
 
-  transporter = nodemailer.createTransport({
+  const port = Number(SMTP_PORT);
+  const secure = port === 465;
+
+  const transportOptions: SMTPTransport.Options = {
     host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465,
+    port,
+    secure,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASSWORD,
     },
-  });
+    tls: secure
+      ? undefined
+      : {
+          // When using STARTTLS - validate certificate
+          servername: SMTP_HOST,
+        },
+  };
+
+  transporter = nodemailer.createTransport(transportOptions);
 
   return transporter;
 }
