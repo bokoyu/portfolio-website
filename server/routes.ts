@@ -2,6 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProjectSchema, updateProjectSchema } from "@shared/schema";
+import { sendContactEmail } from "./email";
+import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // put application routes here
@@ -45,6 +47,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const ok = await storage.deleteProject(req.params.id);
     if (!ok) return res.status(404).json({ message: "Not found" });
     res.status(204).end();
+  });
+
+  const contactSchema = z.object({
+    name: z.string().min(1).max(200),
+    email: z.string().email(),
+    subject: z.string().min(1).max(200),
+    message: z.string().min(1).max(5000),
+  });
+
+  app.post("/api/contact", async (req: Request, res: Response) => {
+    const parsed = contactSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: parsed.error.message });
+    }
+
+    try {
+      await sendContactEmail(parsed.data);
+      res.status(200).json({ message: "Message sent" });
+    } catch (error) {
+      console.error("Contact form email error:", error);
+      res
+        .status(500)
+        .json({
+          message:
+            "Unable to send your message right now. Please try again later.",
+        });
+    }
   });
 
   const httpServer = createServer(app);

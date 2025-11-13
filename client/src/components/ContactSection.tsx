@@ -16,6 +16,7 @@ export default function ContactSection() {
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,14 +26,20 @@ export default function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      // Mock form submission - TODO: remove mock functionality
-      console.log('Contact form submitted:', formData);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.message ?? 'Something went wrong. Please try again.');
+      }
+
       setSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
       
@@ -40,6 +47,7 @@ export default function ContactSection() {
       setTimeout(() => setSuccess(false), 5000);
     } catch (error) {
       console.error('Form submission error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to send message. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -136,6 +144,13 @@ export default function ContactSection() {
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <AlertDescription className="text-green-800">
                       Thank you for your message! I'll get back to you soon.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                {error && (
+                  <Alert variant="destructive" className="mb-6">
+                    <AlertDescription>
+                      {error}
                     </AlertDescription>
                   </Alert>
                 )}
